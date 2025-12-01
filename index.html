@@ -450,7 +450,7 @@
     </label>
     <input type="text" id="luckyNumber" readonly placeholder="กดปุ่ม &quot;สุ่มเลข&quot;">
     <div class="btn-row">
-      <button type="button" class="btn-outline" id="luckyBtn" onclick="requestLucky()">
+      <button type="button" class="btn-outline" id="luckyBtn" onclick="requestLuckySmart()">
         🎲 สุ่มเลข / ดูเลขเดิม
       </button>
       <span id="loadingLucky" class="loading hidden">
@@ -551,8 +551,8 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 
   <script>
-    // URL Web App ของ Apps Script (ตัวเดิม)
-    const API_URL = 'https://script.google.com/macros/s/AKfycbyCCpf-nRI5SgzQeVU44S9vqop10cEsk2IWDRR0Er0P1bRySc3nz28VfOdVO_Q0VKvysQ/exec';
+    // URL Web App ของ Apps Script (อัปเดตเป็น URL ใหม่)
+    const API_URL = 'https://script.google.com/macros/s/AKfycbx6zNpyWM-VWnhlnrgTUMPHaL0sUoufS5onjq3TILTjwl0fE3Mlh_SCqKzAfso2lEZMDw/exec';
 
     var empMap = {};            // key = empId
     var empIndex = [];          // สำหรับค้นหา/แนะนำ (debounce)
@@ -603,9 +603,13 @@
       return (json.result && json.result.employees) || [];
     }
 
+    // เพิ่มฟังก์ชันสำหรับเรียกแบบ POST (สำหรับ Fast Path)
     async function apiGetLucky(empId) {
-      const url = API_URL + '?action=getLuckyNumber&empId=' + encodeURIComponent(empId);
-      const res = await fetch(url, { cache: 'no-store' });
+      const res = await fetch(API_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify({ action: 'getLuckyNumber', payload: { empId: empId } })
+      });
       const json = await res.json();
       if (!json.ok) throw new Error(json.error || 'API error');
       return json.result;
@@ -827,8 +831,8 @@
       }
     }
 
-    // ฟังก์ชันสำหรับสุ่มเลข (เปลี่ยนไปใช้ระบบคิว)
-    async function requestLucky() {
+    // ฟังก์ชันใหม่: สุ่มเลขแบบฉลาด (Fast Path + Queue)
+    async function requestLuckySmart() {
       if (isLoading) return;
       
       var empId = document.getElementById('empId').value.trim();
@@ -841,25 +845,37 @@
       setLoading(true, ['luckyBtn']);
 
       try {
-        // === ขั้นตอนที่ 1: เข้าคิว ===
-        const res = await apiAddToQueue({ empId: empId });
-        if (!res) {
-          setMsg('msgLucky', 'ไม่สามารถเข้าคิวได้ กรุณาลองใหม่อีกครั้ง', 'error');
-          return;
+        // === ขั้นตอนที่ 1: พยายามวิธีแบบเร็ว (Fast Path) ===
+        const res = await apiGetLucky(empId);
+        if (res && res.luckyNumber) {
+          // --- สำเร็จ! แสดงผลลัพธ์ทันที ---
+          document.getElementById('luckyNumber').value = res.luckyNumber;
+          setMsg('msgLucky', `สุ่มเลขสำเร็จ! เลขของคุณคือ ${res.luckyNumber}`, 'info');
+          
+          // อัปเดตข้อมูลในระบบหลัก
+          if (!empMap[res.empId]) empMap[res.empId] = { empId: res.empId };
+          empMap[res.empId].luckyNumber = res.luckyNumber;
+          return; // เสร็จแล้ว ไม่ต้องทำอะไรต่อ
         }
-
-        // แสดงข้อความว่าเข้าคิวแล้ว
-        setMsg('msgLucky', res.message, 'info');
-        
-        // แสดงสถานะคิว
-        showQueueStatus(res.queueNumber);
-
-        // === ขั้นตอนที่ 2: เริ่มตรวจสอบผลลัพธ์ (Polling) ===
-        pollForResult(empId);
-
       } catch (err) {
-        console.error(err);
-        setMsg('msgLucky', 'เกิดข้อผิดพลาด: ' + err.message, 'error');
+        console.error('Direct attempt failed:', err.message);
+        // === ขั้นตอนที่ 2: ตรวจสอบว่าเป็นข้อผิดพลาดจากการพลุกพล่านหรือไม่ ===
+        if (err.message.includes('too many times') || err.message.includes('Could not acquire lock')) {
+          // --- เป็นข้อผิดพลาดจากการพลุกพล่าน สลับไปใช้ระบบคิว ---
+          setMsg('msgLucky', 'ระบบกำลังพลุกพล่าน กำลังนำคุณเข้าสู่คิว...', 'warn');
+          try {
+            const queueRes = await apiAddToQueue({ empId: empId });
+            setMsg('msgLucky', queueRes.message, 'info');
+            showQueueStatus(queueRes.queueNumber);
+            pollForResult(empId); // เริ่มตรวจสอบผลลัพธ์
+          } catch (queueErr) {
+            console.error('Queue attempt failed:', queueErr);
+            setMsg('msgLucky', 'เกิดข้อผิดพลาดในการเข้าคิว: ' + queueErr.message, 'error');
+          }
+        } else {
+          // --- เป็นข้อผิดพลาดอื่นๆ แสดงข้อความผิดพลาดนั้น ---
+          setMsg('msgLucky', 'เกิดข้อผิดพลาด: ' + err.message, 'error');
+        }
       } finally {
         setLoading(false, ['luckyBtn']);
       }
