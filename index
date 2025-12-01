@@ -1,0 +1,1148 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <title>ลงทะเบียนสุ่มเลขพนักงาน</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <style>
+    * {
+      box-sizing: border-box;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    body {
+      margin: 0;
+      padding: 16px;
+      background: #000
+        url('https://firebasestorage.googleapis.com/v0/b/pichayut-40dd2.firebasestorage.app/o/pexels-cottonbro-6072439.jpg?alt=media&token=7732ed40-e69f-477e-b342-571957c9c09a')
+        no-repeat center center fixed;
+      background-size: cover;
+      color: #f9fafb;
+      min-height: 100vh;
+    }
+    h1 {
+      text-align: center;
+      margin-bottom: 12px;
+      font-size: 1.4rem;
+      color: #fefce8;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.6);
+    }
+    .card {
+      max-width: 540px;
+      margin: 0 auto;
+      background: rgba(15,23,42,0.85);
+      border-radius: 16px;
+      padding: 16px 16px 20px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.45);
+      border: 1px solid rgba(248,250,252,0.15);
+    }
+    label {
+      display: block;
+      margin-bottom: 4px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: #e5e7eb;
+    }
+    input[type="text"] {
+      width: 100%;
+      padding: 8px 10px;
+      border-radius: 8px;
+      border: 1px solid #4b5563;
+      font-size: 16px; /* กันมือถือซูม */
+      margin-bottom: 10px;
+      background: rgba(15,23,42,0.9);
+      color: #f9fafb;
+    }
+    input[type="text"]::placeholder {
+      color: #9ca3af;
+    }
+    input[readonly] {
+      background: rgba(15,23,42,0.8);
+    }
+    .row-2 {
+      display: flex;
+      gap: 8px;
+    }
+    .row-2 > div {
+      flex: 1 1 0;
+    }
+    .btn-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 4px;
+      margin-bottom: 8px;
+    }
+    button {
+      border: none;
+      border-radius: 999px;
+      padding: 8px 14px;
+      font-size: 16px; /* กันมือถือซูม */
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      transition: transform 0.1s ease, box-shadow 0.1s ease, opacity 0.2s;
+      white-space: nowrap;
+    }
+    button:active {
+      transform: scale(0.97);
+      box-shadow: 0 3px 8px rgba(0,0,0,0.4);
+    }
+    button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+    .btn-primary {
+      background: linear-gradient(135deg, #16a34a, #15803d, #b91c1c);
+      color: #fefce8;
+      box-shadow: 0 4px 12px rgba(22,163,74,0.6);
+    }
+    .btn-secondary {
+      background: rgba(31,41,55,0.9);
+      color: #e5e7eb;
+      border: 1px solid rgba(148,163,184,0.7);
+    }
+    .btn-outline {
+      background: transparent;
+      border: 1px solid rgba(148,163,184,0.9);
+      color: #e5e7eb;
+    }
+    .btn-full {
+      width: 100%;
+      margin-top: 6px;
+    }
+    .msg {
+      font-size: 0.85rem;
+      margin-top: 2px;
+      margin-bottom: 6px;
+    }
+    .msg.info { color: #bfdbfe; }
+    .msg.warn { color: #fbbf24; }
+    .msg.error { color: #fecaca; }
+
+    .badge {
+      display: inline-block;
+      padding: 2px 8px;
+      font-size: 0.7rem;
+      border-radius: 999px;
+      background: rgba(254,240,138,0.15);
+      color: #facc15;
+      margin-left: 4px;
+      vertical-align: middle;
+      border: 1px solid rgba(250,204,21,0.4);
+    }
+
+    .ticket-wrap {
+      max-width: 540px;
+      margin: 16px auto 0;
+    }
+    .ticket {
+      position: relative;
+      background: radial-gradient(circle at top left, #facc15, #b91c1c 40%, #14532d 100%);
+      color: #fff;
+      border-radius: 18px;
+      padding: 16px 16px 18px;
+      box-shadow: 0 10px 28px rgba(0,0,0,0.55);
+      overflow: hidden;
+      border: 1px solid rgba(250,250,250,0.4);
+    }
+    .ticket:before,
+    .ticket:after {
+      content: "";
+      position: absolute;
+      top: 16px;
+      bottom: 16px;
+      width: 18px;
+      background: #0f172a;
+      border-radius: 999px;
+    }
+    .ticket:before { left: -9px; }
+    .ticket:after { right: -9px; }
+    .ticket-inner {
+      position: relative;
+      z-index: 1;
+    }
+    .ticket-title {
+      font-weight: 700;
+      font-size: 1.15rem;
+      margin-bottom: 4px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .ticket-title span.emoji {
+      font-size: 1.2rem;
+    }
+    .ticket-sub {
+      font-size: 0.85rem;
+      opacity: 0.95;
+      margin-bottom: 10px;
+    }
+    .ticket-row {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.9rem;
+      margin-bottom: 4px;
+    }
+    .ticket-label {
+      opacity: 0.9;
+    }
+    .ticket-value {
+      font-weight: 600;
+    }
+    .ticket-lucky {
+      margin-top: 10px;
+      text-align: center;
+      padding: 10px;
+      border-radius: 12px;
+      background: rgba(15,23,42,0.35);
+      border: 1px dashed rgba(255,255,255,0.85);
+      font-size: 1.1rem;
+      letter-spacing: 0.15em;
+    }
+    .ticket-hint {
+      margin-top: 6px;
+      font-size: 0.8rem;
+      opacity: 0.95;
+      text-align: center;
+    }
+
+    .ticket-tabs {
+      display: flex;
+      gap: 8px;
+      margin-top: 10px;
+      font-size: 0.8rem;
+    }
+    .ticket-tab {
+      flex: 1 1 0;
+      border-radius: 10px;
+      padding: 6px 8px;
+      background: rgba(15,23,42,0.35);
+      border: 1px dashed rgba(248,250,252,0.5);
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      align-items: flex-start;
+    }
+    .ticket-tab.used {
+      background: rgba(22,163,74,0.4);
+      border-style: solid;
+      border-color: rgba(22,163,74,0.9);
+    }
+    .ticket-tab-title {
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+    .ticket-tab-status {
+      opacity: 0.95;
+    }
+
+    .ticket-qr {
+      margin-top: 12px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+    }
+    .ticket-qr-label {
+      font-size: 0.8rem;
+      opacity: 0.95;
+    }
+
+    .ticket-print-btn {
+      margin-top: 8px;
+      display: flex;
+      justify-content: center;
+    }
+
+    .hidden { display: none; }
+
+    .footer-tip {
+      max-width: 540px;
+      margin: 10px auto 0;
+      font-size: 0.8rem;
+      color: #e5e7eb;
+      text-align: center;
+      text-shadow: 0 1px 2px rgba(0,0,0,0.6);
+    }
+
+    .loading {
+      font-size: 0.8rem;
+      color: #e5e7eb;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      margin-left: 4px;
+    }
+    .loading-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 999px;
+      background: #9ca3af;
+      animation: blink 1s infinite ease-in-out;
+    }
+    .loading-dot:nth-child(2) { animation-delay: 0.2s; }
+    .loading-dot:nth-child(3) { animation-delay: 0.4s; }
+
+    @keyframes blink {
+      0%, 80%, 100% { opacity: 0.2; }
+      40% { opacity: 1; }
+    }
+
+    @media (max-width: 480px) {
+      body {
+        padding: 10px;
+      }
+      .card {
+        padding: 12px 12px 16px;
+      }
+      .row-2 {
+        flex-direction: column;
+      }
+    }
+
+    @media print {
+      body {
+        background: #fff;
+        padding: 0;
+      }
+      .card, .footer-tip {
+        display: none !important;
+      }
+      .ticket-wrap {
+        margin-top: 0;
+      }
+      .ticket {
+        box-shadow: none;
+      }
+      .ticket-print-btn {
+        display: none !important;
+      }
+    }
+
+    /* === Suggestion list สำหรับรหัสพนักงาน (แทน datalist) === */
+    .empid-wrap {
+      position: relative;
+    }
+    #empIdSuggestions {
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: 100%;
+      margin-top: 2px;
+      background: rgba(15,23,42,0.98);
+      border-radius: 10px;
+      border: 1px solid rgba(148,163,184,0.8);
+      max-height: 220px;
+      overflow-y: auto;
+      z-index: 30;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.6);
+    }
+    .suggest-list {
+      padding: 4px 0;
+    }
+    .suggest-item {
+      padding: 6px 10px;
+      font-size: 0.9rem;
+      cursor: pointer;
+      color: #e5e7eb;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .suggest-item:hover {
+      background: rgba(55,65,81,0.9);
+    }
+    .suggest-item strong {
+      font-weight: 700;
+      color: #facc15;
+    }
+    .suggest-empty {
+      padding: 6px 10px;
+      font-size: 0.85rem;
+      color: #9ca3af;
+    }
+
+    /* === Queue Status === */
+    .queue-status {
+      background: rgba(15,23,42,0.9);
+      border-radius: 12px;
+      padding: 12px;
+      margin-top: 10px;
+      border: 1px solid rgba(148,163,184,0.3);
+    }
+    .queue-status-title {
+      font-weight: 700;
+      margin-bottom: 8px;
+      color: #facc15;
+    }
+    .queue-status-info {
+      font-size: 0.9rem;
+      margin-bottom: 5px;
+    }
+    .queue-progress {
+      width: 100%;
+      height: 8px;
+      background: rgba(148,163,184,0.3);
+      border-radius: 4px;
+      margin-top: 8px;
+      overflow: hidden;
+    }
+    .queue-progress-bar {
+      height: 100%;
+      background: linear-gradient(90deg, #16a34a, #facc15);
+      border-radius: 4px;
+      width: 0%;
+      transition: width 0.3s ease;
+    }
+  </style>
+</head>
+<body>
+  <h1>🎄 ลงทะเบียนสุ่มเลขพนักงาน – Christmas Event 🎁</h1>
+
+  <div class="card">
+    <div style="margin-bottom: 10px; font-size: 0.85rem; color:#e5e7eb;">
+      แบบฟอร์มนี้ใช้สำหรับลงทะเบียนกิจกรรมเทศกาลคริสต์มาสของพนักงาน<br>
+      - พิมพ์รหัสพนักงานในช่องด้านล่าง<br>
+      - ถ้ารหัสนี้มีอยู่ในระบบแล้ว ระบบจะแสดง <strong>ชื่อ–นามสกุล, ฝ่าย, เลขสุ่ม</strong> ให้อัตโนมัติ<br>
+      - ถ้าเป็นรหัสใหม่ ให้กรอกข้อมูลให้ครบ แล้วกดบันทึก ระบบจะเพิ่มพนักงานคนนี้เข้าไฟล์ให้อัตโนมัติ<br>
+      - สถานะ <strong>GAME / ICE CREAM</strong> จะแสดงบนคูปอง ตามที่ติ๊กใน Excel (คอลัมน์ F, G) หลังบ้าน
+    </div>
+
+    <label for="empId">รหัสพนักงาน</label>
+    <div class="empid-wrap">
+      <input type="text" id="empId" placeholder="เช่น 1000000001 หรือพิมพ์ 5 ตัวท้าย" autocomplete="off">
+      <div id="empIdSuggestions" class="hidden"></div>
+    </div>
+
+    <div class="btn-row">
+      <button type="button" class="btn-secondary" onclick="triggerEmpLookup()">
+        🔍 ดึงข้อมูลจากรหัส
+      </button>
+      <span id="loadingEmpList" class="loading hidden">
+        <span class="loading-dot"></span>
+        <span class="loading-dot"></span>
+        <span class="loading-dot"></span>
+      </span>
+    </div>
+    <div id="msgEmp" class="msg"></div>
+
+    <div class="row-2">
+      <div>
+        <label for="firstName">ชื่อ</label>
+        <input type="text" id="firstName" placeholder="ชื่อจริง">
+      </div>
+      <div>
+        <label for="lastName">นามสกุล</label>
+        <input type="text" id="lastName" placeholder="นามสกุล">
+      </div>
+    </div>
+
+    <label for="department">ฝ่าย / แผนก</label>
+    <input type="text" id="department" placeholder="เช่น Top Department">
+
+    <label for="luckyNumber">
+      เลขสุ่ม
+      <span class="badge">ใช้สำหรับจับรางวัลวันคริสต์มาส (0000–0399)</span>
+    </label>
+    <input type="text" id="luckyNumber" readonly placeholder="กดปุ่ม &quot;สุ่มเลข&quot;">
+    <div class="btn-row">
+      <button type="button" class="btn-outline" id="luckyBtn" onclick="requestLucky()">
+        🎲 สุ่มเลข / ดูเลขเดิม
+      </button>
+      <span id="loadingLucky" class="loading hidden">
+        <span class="loading-dot"></span>
+        <span class="loading-dot"></span>
+        <span class="loading-dot"></span>
+      </span>
+    </div>
+    <div id="msgLucky" class="msg"></div>
+
+    <!-- แสดงสถานะคิว -->
+    <div id="queueStatus" class="queue-status hidden">
+      <div class="queue-status-title">📋 สถานะการสุ่มเลข</div>
+      <div class="queue-status-info" id="queueInfo">กำลังดำเนินการ...</div>
+      <div class="queue-progress">
+        <div class="queue-progress-bar" id="queueProgressBar"></div>
+      </div>
+    </div>
+
+    <!-- ปุ่มบันทึกเฉพาะข้อมูล -->
+    <div class="btn-row">
+      <button type="button" class="btn-secondary btn-full" onclick="saveOnly()">
+        💾 บันทึกข้อมูลลงระบบ
+      </button>
+    </div>
+    <!-- ปุ่มแสดงคูปอง (ต้องบันทึกก่อน) -->
+    <div class="btn-row">
+      <button type="button" class="btn-primary btn-full" onclick="showTicket()">
+        🎟️ แสดงคูปองจากข้อมูลล่าสุด
+      </button>
+    </div>
+    <div id="msgSave" class="msg"></div>
+  </div>
+
+  <div id="ticketSection" class="ticket-wrap hidden">
+    <div class="ticket">
+      <div class="ticket-inner">
+        <div class="ticket-title">
+          <span class="emoji">🎄</span>
+          <span>Christmas Lucky Draw</span>
+        </div>
+        <div class="ticket-sub">Merry Christmas! คุณได้รับคูปองสุ่มเลขสำหรับใช้ในกิจกรรมจับรางวัล</div>
+
+        <div class="ticket-row">
+          <div class="ticket-label">ชื่อ-นามสกุล</div>
+          <div class="ticket-value" id="ticketName">-</div>
+        </div>
+        <div class="ticket-row">
+          <div class="ticket-label">ฝ่าย / แผนก</div>
+          <div class="ticket-value" id="ticketDept">-</div>
+        </div>
+        <div class="ticket-row">
+          <div class="ticket-label">รหัสพนักงาน</div>
+          <div class="ticket-value" id="ticketEmpId">-</div>
+        </div>
+
+        <div class="ticket-lucky">
+          เลขของคุณ: <span id="ticketLucky">----</span>
+        </div>
+
+        <!-- แท็บ GAME / ICE CREAM แสดงสถานะจาก Excel -->
+        <div class="ticket-tabs">
+          <div class="ticket-tab" id="ticketGameTab">
+            <div class="ticket-tab-title">เข้าร่วมกิจกรรม</div>
+            <div class="ticket-tab-status" id="ticketGameStatus">ยังไม่ลงทะเบียน</div>
+          </div>
+          <div class="ticket-tab" id="ticketIceTab">
+            <div class="ticket-tab-title">GAME</div>
+            <div class="ticket-tab-status" id="ticketIceStatus">ยังไม่ลงทะเบียน</div>
+          </div>
+        </div>
+
+        <!-- QR CODE ของรหัสพนักงาน -->
+        <div class="ticket-qr">
+          <div id="ticketQr"></div>
+          <div class="ticket-qr-label">สแกน QR นี้เพื่ออ่านรหัสพนักงานในระบบ</div>
+        </div>
+
+        <div class="ticket-hint">
+          * แนะนำให้ถ่ายรูปหน้าจอ หรือบันทึก/พิมพ์คูปองนี้เก็บไว้<br>เพื่อนำไปใช้ยืนยันสิทธิ์ในวันงานเทศกาลคริสต์มาส
+        </div>
+      </div>
+    </div>
+
+    <!-- ปุ่มบันทึกคูปอง (ใช้ window.print) -->
+    <div class="ticket-print-btn">
+      <button type="button" class="btn-outline" onclick="printTicket()">
+        🖨️ บันทึก / พิมพ์คูปอง
+      </button>
+    </div>
+  </div>
+
+  <div class="footer-tip">
+    เปิดจากมือถือสามารถถ่ายรูปหน้าจอ หรือกด "บันทึก / พิมพ์คูปอง" เพื่อเก็บคูปองได้เลย 🎅
+  </div>
+
+  <!-- QRCode library -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
+  <script>
+    // URL Web App ของ Apps Script (ตัวเดิม)
+    const API_URL = 'https://script.google.com/macros/s/AKfycbwUrfAn48S_DuVzpLSjstREwqafsV6Rxhi4ZTWq6LLhsgTnjylVllG7LZAP9_D39uuO9w/exec';
+
+    var empMap = {};            // key = empId
+    var empIndex = [];          // สำหรับค้นหา/แนะนำ (debounce)
+    var lastSavedRecord = null; // เก็บ record ล่าสุดที่บันทึกสำเร็จ
+    var isLoading = false;      // ป้องกันการกดซ้ำขณะโหลด
+    var pollInterval = null;    // สำหรับเก็บ interval ของการ poll สถานะ
+
+    // debounce helper
+    function debounce(fn, delay) {
+      var t = null;
+      return function() {
+        var ctx = this, args = arguments;
+        clearTimeout(t);
+        t = setTimeout(function() {
+          fn.apply(ctx, args);
+        }, delay);
+      };
+    }
+
+    // แสดง/ซ่อน loading และปิดใช้งานปุ่ม
+    function setLoading(isLoadingState, buttonsToDisable = []) {
+      isLoading = isLoadingState;
+      
+      // แสดง/ซ่อน loading indicators
+      setLoading('loadingEmpList', isLoadingState && buttonsToDisable.includes('lookupBtn'));
+      setLoading('loadingLucky', isLoadingState && buttonsToDisable.includes('luckyBtn'));
+      
+      // ปิด/เปิดการใช้งานปุ่ม
+      buttonsToDisable.forEach(btnId => {
+        const btn = document.getElementById(btnId);
+        if (btn) {
+          btn.disabled = isLoadingState;
+        }
+      });
+    }
+
+    // ฟังก์ชันสำหรับแสดง/ซ่อน loading ตาม ID
+    function setLoading(id, isLoadingState) {
+      var el = document.getElementById(id);
+      if (!el) return;
+      el.classList.toggle('hidden', !isLoadingState);
+    }
+
+    async function apiGetEmployees() {
+      const res = await fetch(API_URL + '?action=getEmployees', { cache: 'no-store' });
+      const json = await res.json();
+      if (!json.ok) throw new Error(json.error || 'API error');
+      return (json.result && json.result.employees) || [];
+    }
+
+    async function apiGetLucky(empId) {
+      const url = API_URL + '?action=getLuckyNumber&empId=' + encodeURIComponent(empId);
+      const res = await fetch(url, { cache: 'no-store' });
+      const json = await res.json();
+      if (!json.ok) throw new Error(json.error || 'API error');
+      return json.result;
+    }
+
+    async function apiSaveEmployee(payload) {
+      const res = await fetch(API_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify({ action: 'saveEmployee', payload: payload || {} })
+      });
+      const json = await res.json();
+      if (!json.ok) throw new Error(json.error || 'API error');
+      return json.result;
+    }
+
+    async function apiAddToQueue(payload) {
+      const res = await fetch(API_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify({ action: 'addToQueue', payload: payload || {} })
+      });
+      const json = await res.json();
+      if (!json.ok) throw new Error(json.error || 'API error');
+      return json.result;
+    }
+
+    async function apiCheckMyStatus(payload) {
+      const res = await fetch(API_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify({ action: 'checkMyStatus', payload: payload || {} })
+      });
+      const json = await res.json();
+      if (!json.ok) throw new Error(json.error || 'API error');
+      return json.result;
+    }
+
+    function setMsg(id, text, type) {
+      var el = document.getElementById(id);
+      el.textContent = text || '';
+      el.className = 'msg ' + (type || '');
+    }
+
+    function fillFormFromRecord(record) {
+      if (!record) return;
+
+      document.getElementById('empId').value      = record.empId || '';
+      document.getElementById('firstName').value  = record.firstName || '';
+      document.getElementById('lastName').value   = record.lastName || '';
+      document.getElementById('department').value = record.department || '';
+      document.getElementById('luckyNumber').value = record.luckyNumber || '';
+
+      if (record.luckyNumber) {
+        setMsg('msgLucky', 'รหัสนี้มีเลขสุ่มอยู่แล้ว ระบบแสดงเลขเดิมให้แล้ว', 'info');
+      } else {
+        setMsg('msgLucky', 'ยังไม่มีเลขสุ่มสำหรับรหัสนี้ กรุณากดปุ่ม "สุ่มเลข"', 'warn');
+      }
+
+      setMsg('msgEmp', 'พบข้อมูลพนักงานจากระบบแล้ว', 'info');
+    }
+
+    function clearFormForNew(empId) {
+      document.getElementById('firstName').value  = '';
+      document.getElementById('lastName').value   = '';
+      document.getElementById('department').value = '';
+      document.getElementById('luckyNumber').value = '';
+      if (empId) {
+        setMsg('msgEmp', 'ไม่พบรหัสนี้ในระบบ เมื่อบันทึกจะสร้างข้อมูลใหม่ให้', 'warn');
+      } else {
+        setMsg('msgEmp', '', '');
+      }
+      setMsg('msgLucky', '', '');
+      lastSavedRecord = null;
+    }
+
+    // สร้าง index สำหรับค้นหา: ใช้รหัสเต็ม + ตัวหน้า + 5 ตัวท้าย + ชื่อ
+    function buildEmpIndex(list) {
+      empIndex = [];
+      (list || []).forEach(function(r) {
+        if (!r.empId) return;
+        var id = String(r.empId);
+        var fullName = r.fullName || ((r.firstName || '') + ' ' + (r.lastName || '')).trim();
+        var firstChar = id.charAt(0) || '';
+        var last5 = id.slice(-5);
+        var label = (id + ' ' + fullName).trim();
+        var key = (id + ' ' + firstChar + ' ' + last5 + ' ' + fullName).toLowerCase();
+        empIndex.push({
+          empId: id,
+          fullName: fullName,
+          label: label,
+          key: key
+        });
+      });
+    }
+
+    function renderEmpSuggestions(query) {
+      var panel = document.getElementById('empIdSuggestions');
+      panel.innerHTML = '';
+      panel.classList.add('hidden');
+
+      var q = (query || '').trim();
+      if (!q) return;
+
+      var lower = q.toLowerCase();
+      var results = [];
+      var MAX_RESULTS = 20;
+
+      for (var i = 0; i < empIndex.length; i++) {
+        var item = empIndex[i];
+        if (item.key.indexOf(lower) !== -1) {
+          results.push(item);
+          if (results.length >= MAX_RESULTS) break;
+        }
+      }
+
+      if (!results.length) {
+        var empty = document.createElement('div');
+        empty.className = 'suggest-empty';
+        empty.textContent = 'ไม่พบรหัสที่ใกล้เคียง';
+        panel.appendChild(empty);
+        panel.classList.remove('hidden');
+        return;
+      }
+
+      var container = document.createElement('div');
+      container.className = 'suggest-list';
+
+      results.forEach(function(item) {
+        var row = document.createElement('div');
+        row.className = 'suggest-item';
+        row.dataset.empId = item.empId;
+
+        // เน้นรหัส
+        var strong = document.createElement('strong');
+        strong.textContent = item.empId;
+        row.appendChild(strong);
+
+        if (item.fullName) {
+          var spanName = document.createElement('span');
+          spanName.textContent = ' • ' + item.fullName;
+          row.appendChild(spanName);
+        }
+
+        row.addEventListener('click', function() {
+          selectEmpIdFromSuggestion(this.dataset.empId);
+        });
+
+        container.appendChild(row);
+      });
+
+      panel.appendChild(container);
+      panel.classList.remove('hidden');
+    }
+
+    function hideEmpSuggestions() {
+      var panel = document.getElementById('empIdSuggestions');
+      panel.innerHTML = '';
+      panel.classList.add('hidden');
+    }
+
+    function selectEmpIdFromSuggestion(empId) {
+      var input = document.getElementById('empId');
+      input.value = empId;
+      hideEmpSuggestions();
+
+      var rec = empMap[empId];
+      if (rec) {
+        fillFormFromRecord(rec);
+        lastSavedRecord = rec;
+      } else {
+        clearFormForNew(empId);
+      }
+    }
+
+    // ใช้ตอนกดปุ่ม 🔍 หรือ Enter → เช็คแบบ exact match
+    function lookupExactEmpId() {
+      var v = document.getElementById('empId').value.trim();
+      if (!v) {
+        clearFormForNew('');
+        hideEmpSuggestions();
+        return;
+      }
+      var rec = empMap[v];
+      if (rec) {
+        fillFormFromRecord(rec);
+        lastSavedRecord = rec;
+        hideEmpSuggestions();
+      } else {
+        clearFormForNew(v);
+      }
+    }
+
+    function triggerEmpLookup() {
+      if (isLoading) return;
+      lookupExactEmpId();
+    }
+
+    async function initEmpIds() {
+      try {
+        setLoading(true, ['lookupBtn']);
+        setMsg('msgEmp', 'กำลังโหลดรายชื่อรหัสพนักงาน...', 'info');
+        const list = await apiGetEmployees();
+
+        empMap = {};
+        (list || []).forEach(function(r) {
+          if (!r.empId) return;
+          empMap[r.empId] = r;
+        });
+
+        buildEmpIndex(list);
+
+        setMsg('msgEmp', 'พิมพ์รหัสพนักงาน (เลขเต็ม หรือตัวหน้า + 5 ตัวท้าย) เพื่อเลือกจากรายการที่มีอยู่ หรือกรอกรหัสใหม่ได้เลย', 'info');
+      } catch (err) {
+        console.error(err);
+        setMsg('msgEmp', 'โหลดรายชื่อรหัสพนักงานไม่สำเร็จ: ' + err.message, 'error');
+      } finally {
+        setLoading(false, ['lookupBtn']);
+      }
+    }
+
+    // ฟังก์ชันสำหรับสุ่มเลข (เปลี่ยนไปใช้ระบบคิว)
+    async function requestLucky() {
+      if (isLoading) return;
+      
+      var empId = document.getElementById('empId').value.trim();
+      if (!empId) {
+        alert('กรุณากรอกรหัสพนักงานก่อนสุ่มเลข');
+        return;
+      }
+      setMsg('msgLucky', '', '');
+      setMsg('msgSave', '', '');
+      setLoading(true, ['luckyBtn']);
+
+      try {
+        // === ขั้นตอนที่ 1: เข้าคิว ===
+        const res = await apiAddToQueue({ empId: empId });
+        if (!res) {
+          setMsg('msgLucky', 'ไม่สามารถเข้าคิวได้ กรุณาลองใหม่อีกครั้ง', 'error');
+          return;
+        }
+
+        // แสดงข้อความว่าเข้าคิวแล้ว
+        setMsg('msgLucky', res.message, 'info');
+        
+        // แสดงสถานะคิว
+        showQueueStatus(res.queueNumber);
+
+        // === ขั้นตอนที่ 2: เริ่มตรวจสอบผลลัพธ์ (Polling) ===
+        pollForResult(empId);
+
+      } catch (err) {
+        console.error(err);
+        setMsg('msgLucky', 'เกิดข้อผิดพลาด: ' + err.message, 'error');
+      } finally {
+        setLoading(false, ['luckyBtn']);
+      }
+    }
+
+    // แสดงสถานะคิว
+    function showQueueStatus(queueNumber) {
+      const queueStatus = document.getElementById('queueStatus');
+      const queueInfo = document.getElementById('queueInfo');
+      const progressBar = document.getElementById('queueProgressBar');
+      
+      queueStatus.classList.remove('hidden');
+      queueInfo.textContent = `คุณอยู่ในคิวหมายเลข ${queueNumber} กรุณารอสักครู่...`;
+      
+      // จำลอง progress bar
+      let progress = 0;
+      const progressInterval = setInterval(() => {
+        progress += Math.random() * 15;
+        if (progress > 90) progress = 90; // ไม่ให้เต็ม 100% จนกว่าจะเสร็จจริง
+        progressBar.style.width = `${progress}%`;
+      }, 1000);
+      
+      // เก็บ interval ไว้เพื่อหยุดเวลาที่เหมาะสม
+      progressBar.dataset.interval = progressInterval;
+    }
+
+    // อัปเดตสถานะคิวเมื่อเสร็จ
+    function updateQueueStatusCompleted(luckyNumber) {
+      const queueStatus = document.getElementById('queueStatus');
+      const queueInfo = document.getElementById('queueInfo');
+      const progressBar = document.getElementById('queueProgressBar');
+      
+      // หยุด progress bar
+      if (progressBar.dataset.interval) {
+        clearInterval(progressBar.dataset.interval);
+      }
+      
+      // แสดงผลลัพธ์
+      progressBar.style.width = '100%';
+      queueInfo.textContent = `สุ่มเลขสำเร็จ! เลขของคุณคือ ${luckyNumber}`;
+      
+      // ซ่อนหลังจาก 3 วินาที
+      setTimeout(() => {
+        queueStatus.classList.add('hidden');
+      }, 3000);
+    }
+
+    // ฟังก์ชันสำหรับตรวจสอบผลลัพธ์ทุกๆ 3 วินาที
+    function pollForResult(empId) {
+      // หยุด polling ก่อนหน้านี้ถ้ามี
+      if (pollInterval) {
+        clearInterval(pollInterval);
+      }
+      
+      pollInterval = setInterval(async () => {
+        try {
+          const res = await apiCheckMyStatus({ empId: empId });
+          if (!res) return;
+
+          const status = res.status;
+          const result = res.result;
+
+          if (status === 'Completed') {
+            clearInterval(pollInterval);
+            pollInterval = null;
+            
+            // แปลง result จาก string เป็น object
+            let luckyResult;
+            try {
+              luckyResult = JSON.parse(result);
+            } catch (e) {
+              console.error('Error parsing result:', e);
+              return;
+            }
+            
+            document.getElementById('luckyNumber').value = luckyResult.luckyNumber || '';
+            setMsg('msgLucky', `สุ่มเลขสำเร็จ! เลขของคุณคือ ${luckyResult.luckyNumber}`, 'info');
+            
+            // อัปเดตสถานะคิว
+            updateQueueStatusCompleted(luckyResult.luckyNumber);
+            
+            // อัปเดตข้อมูลในระบบหลัก
+            if (!empMap[empId]) empMap[empId] = { empId: empId };
+            empMap[empId].luckyNumber = luckyResult.luckyNumber;
+            
+          } else if (status === 'Error') {
+            clearInterval(pollInterval);
+            pollInterval = null;
+            setMsg('msgLucky', `เกิดข้อผิดพลาด: ${result}`, 'error');
+            
+            // ซ่อนสถานะคิว
+            document.getElementById('queueStatus').classList.add('hidden');
+          }
+          // ถ้ายังเป็น 'Waiting' หรือ 'Processing' ก็คือยังไม่เสร็จ ให้ทำงานต่อไป
+
+        } catch (err) {
+          clearInterval(pollInterval);
+          pollInterval = null;
+          console.error(err);
+          setMsg('msgLucky', 'ตรวจสอบสถานะผิดพลาด: ' + err.message, 'error');
+          
+          // ซ่อนสถานะคิว
+          document.getElementById('queueStatus').classList.add('hidden');
+        }
+      }, 3000); // ตรวจทุกๆ 3 วินาที
+    }
+
+    // core สำหรับบันทึกข้อมูล
+    async function saveCore() {
+      if (isLoading) return null;
+      
+      var empId      = document.getElementById('empId').value.trim();
+      var firstName  = document.getElementById('firstName').value.trim();
+      var lastName   = document.getElementById('lastName').value.trim();
+      var department = document.getElementById('department').value.trim();
+      var lucky      = document.getElementById('luckyNumber').value.trim();
+
+      if (!empId)      { alert('กรุณากรอกรหัสพนักงาน'); return null; }
+      if (!firstName)  { alert('กรุณากรอกชื่อ'); return null; }
+      if (!lastName)   { alert('กรุณากรอกนามสกุล'); return null; }
+      if (!department) { alert('กรุณากรอกฝ่าย/แผนก'); return null; }
+      if (!lucky)      { alert('กรุณากดสุ่มเลขก่อนบันทึก'); return null; }
+
+      setMsg('msgSave', '', '');
+      setLoading(true, ['saveBtn']);
+
+      var existedBefore = !!empMap[empId];
+
+      var payload = {
+        empId: empId,
+        firstName: firstName,
+        lastName: lastName,
+        department: department,
+        luckyNumber: lucky
+      };
+
+      try {
+        const res = await apiSaveEmployee(payload); // {success, record}
+        if (!res || !res.success) {
+          setMsg('msgSave', 'บันทึกไม่สำเร็จ กรุณาลองใหม่อีกครั้ง', 'error');
+          return null;
+        }
+
+        var record = res.record || {};
+        empMap[record.empId] = record;
+        lastSavedRecord = record;
+
+        // rebuild index อัปเดต label ให้ตรง
+        buildEmpIndex(Object.values(empMap));
+
+        return { record: record, existedBefore: existedBefore };
+      } catch (err) {
+        console.error(err);
+        setMsg('msgSave', 'บันทึกไม่สำเร็จ: ' + err.message, 'error');
+        return null;
+      } finally {
+        setLoading(false, ['saveBtn']);
+      }
+    }
+
+    // ปุ่ม: บันทึกข้อมูลอย่างเดียว
+    async function saveOnly() {
+      const result = await saveCore();
+      if (!result) return;
+
+      const existedBefore = result.existedBefore;
+      setMsg(
+        'msgSave',
+        existedBefore
+          ? 'อัปเดตข้อมูลพนักงานและเลขสุ่มเรียบร้อยแล้ว'
+          : 'สร้างข้อมูลพนักงานใหม่และบันทึกเรียบร้อยแล้ว',
+        'info'
+      );
+    }
+
+    function updateTicketTabs(record) {
+      var gameTab = document.getElementById('ticketGameTab');
+      var iceTab  = document.getElementById('ticketIceTab');
+      var gameStatus = document.getElementById('ticketGameStatus');
+      var iceStatus  = document.getElementById('ticketIceStatus');
+
+      var hasGame = !!(record && record.game);
+      var hasIce  = !!(record && record.ice);
+
+      gameTab.classList.toggle('used', hasGame);
+      iceTab.classList.toggle('used', hasIce);
+
+      gameStatus.textContent = hasGame ? 'ลงทะเบียน / ใช้สิทธิ์แล้ว' : 'ยังไม่ลงทะเบียน';
+      iceStatus.textContent  = hasIce  ? 'ลงทะเบียน / ใช้สิทธิ์แล้ว' : 'ยังไม่ลงทะเบียน';
+    }
+
+    function renderTicketQr(empId) {
+      var container = document.getElementById('ticketQr');
+      container.innerHTML = '';
+      if (!empId) return;
+      new QRCode(container, {
+        text: String(empId),
+        width: 96,
+        height: 96
+      });
+    }
+
+    function renderTicketFromRecord(record) {
+      if (!record) return;
+
+      var showName = record.fullName ||
+        ((record.firstName || '') + ' ' + (record.lastName || '')).trim();
+      var showDept  = record.department || '-';
+      var showEmp   = record.empId || '-';
+      var showLucky = record.luckyNumber || '----';
+
+      document.getElementById('ticketName').textContent  = showName || '-';
+      document.getElementById('ticketDept').textContent  = showDept || '-';
+      document.getElementById('ticketEmpId').textContent = showEmp || '-';
+      document.getElementById('ticketLucky').textContent = showLucky || '----';
+
+      updateTicketTabs(record);
+      renderTicketQr(showEmp);
+
+      document.getElementById('ticketSection').classList.remove('hidden');
+      window.scrollTo({
+        top: document.getElementById('ticketSection').offsetTop - 10,
+        behavior: 'smooth'
+      });
+    }
+
+    async function showTicket() {
+      if (isLoading) return;
+      
+      if (!lastSavedRecord) {
+        const confirmSave = confirm('ยังไม่มีข้อมูลล่าสุดในระบบ ต้องการบันทึกข้อมูลปัจจุบันก่อนแสดงคูปองหรือไม่?');
+        if (!confirmSave) return;
+        const result = await saveCore();
+        if (!result) return;
+      }
+      renderTicketFromRecord(lastSavedRecord);
+      setMsg('msgSave', 'ดึงข้อมูลล่าสุดจากระบบและแสดงคูปองแล้ว', 'info');
+    }
+
+    function printTicket() {
+      const section = document.getElementById('ticketSection');
+      if (section.classList.contains('hidden')) {
+        alert('ยังไม่มีคูปองให้บันทึก กรุณากด "แสดงคูปองจากข้อมูลล่าสุด" ก่อน');
+        return;
+      }
+      window.print();
+    }
+
+    // ==== Events ====
+    var handleEmpIdInputDebounced = debounce(function() {
+      var v = document.getElementById('empId').value;
+      renderEmpSuggestions(v);
+
+      // ถ้าพิมพ์ตรงกับรหัสที่มีอยู่ → เติมฟอร์มทันที
+      var trimmed = v.trim();
+      if (trimmed && empMap[trimmed]) {
+        fillFormFromRecord(empMap[trimmed]);
+        lastSavedRecord = empMap[trimmed];
+      }
+      // ไม่ clear ฟอร์มตอนพิมพ์บางส่วน เพื่อลื่น ๆ
+    }, 180);
+
+    document.getElementById('empId').addEventListener('input', handleEmpIdInputDebounced);
+
+    document.getElementById('empId').addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        triggerEmpLookup();
+      } else if (e.key === 'Escape') {
+        hideEmpSuggestions();
+      }
+    });
+
+    // คลิกนอกกล่อง → ซ่อน suggestion
+    document.addEventListener('click', function(e) {
+      var wrap = document.querySelector('.empid-wrap');
+      if (!wrap.contains(e.target)) {
+        hideEmpSuggestions();
+      }
+    });
+
+    // init ตอนโหลด
+    initEmpIds();
+  </script>
+</body>
+</html>
